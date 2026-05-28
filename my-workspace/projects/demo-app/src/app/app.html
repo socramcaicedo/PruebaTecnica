@@ -1,0 +1,57 @@
+<div class="min-h-screen bg-gray-900 text-white p-6">
+
+  <!-- Header -->
+  <header class="mb-8 text-center">
+    <h1 class="text-3xl font-bold text-green-400">Rick & Morty Explorer</h1>
+    <p class="text-gray-400 mt-1">Explora personajes, episodios y localizaciones</p>
+  </header>
+
+  <!-- Filtros -->
+  <div class="flex flex-wrap gap-4 mb-6 justify-center">
+
+    <ui-select
+      [options]="resourceOptions"
+      label="Recurso"
+      placeholder="Seleccionar recurso..."
+      [value]="state.resourceType()"
+      (selectionChange)="onResourceChange($event)" />
+
+    <ui-select
+      [options]="filterOptions"
+      label="Filtro (Status)"
+      placeholder="Todos"
+      [value]="state.statusFilter()"
+      (selectionChange)="onFilterChange($event)" />
+
+  </div>
+
+  <!-- Tabla -->
+  <ui-table
+    [columns]="columns()"
+    [rows]="state.rows()"
+    [loading]="state.loading()"
+    emptyMessage="No se encontraron resultados."
+    [errorMessage]="state.error()"
+    (actionTriggered)="onTableAction($event)" />
+
+  <!-- Modal de detalle -->
+  @if (state.selectedRow()) {
+    <div class="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4"
+         (click)="closeModal()">
+      <div class="bg-gray-800 rounded-xl max-w-lg w-full p-6 shadow-2xl"
+           (click)="$event.stopPropagation()">
+
+        <div class="flex justify-between items-center mb-4">
+          <h2 class="text-xl font-bold text-green-400">Detalle</h2>
+          <button
+            class="text-gray-400 hover:text-white text-2xl leading-none"
+            (click)="closeModal()">&times;</button>
+        </div>
+
+        <pre class="text-sm text-gray-300 whitespace-pre-wrap break-words bg-gray-900 rounded-lg p-4">{{ state.selectedRow() | json }}</pre>
+
+      </div>
+    </div>
+  }
+
+</div>

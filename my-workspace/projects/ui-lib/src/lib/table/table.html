@@ -1,0 +1,95 @@
+<div class="overflow-x-auto rounded-lg border border-gray-200">
+
+  <table class="w-full text-sm text-left">
+
+    <!-- Header -->
+    <thead class="text-xs uppercase bg-gray-700 text-gray-100">
+      <tr>
+        @for (col of columns(); track col.key) {
+          <th class="px-4 py-3 font-semibold">{{ col.header }}</th>
+        }
+        <th class="px-4 py-3 font-semibold text-center">Acciones</th>
+      </tr>
+    </thead>
+
+    <tbody>
+
+      <!-- Error state -->
+      @if (errorMessage() !== null) {
+        <tr>
+          <td [attr.colspan]="columns().length + 1" class="px-4 py-8 text-center">
+            <div class="flex flex-col items-center gap-2">
+              <svg class="w-8 h-8 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <p class="text-red-400 font-medium">{{ errorMessage() }}</p>
+            </div>
+          </td>
+        </tr>
+      }
+
+      <!-- Loading state (skeleton) -->
+      @else if (loading()) {
+        @for (skeleton of [0, 1, 2, 3, 4]; track skeleton) {
+          <tr class="border-b border-gray-200">
+            @for (col of columns(); track col.key) {
+              <td class="px-4 py-3">
+                <div class="h-4 bg-gray-200 rounded animate-pulse"></div>
+              </td>
+            }
+            <td class="px-4 py-3">
+              <div class="flex gap-2 justify-center">
+                <div class="h-8 w-16 bg-gray-200 rounded animate-pulse"></div>
+                <div class="h-8 w-16 bg-gray-200 rounded animate-pulse"></div>
+              </div>
+            </td>
+          </tr>
+        }
+      }
+
+      <!-- Empty state -->
+      @else if (rows().length === 0) {
+        <tr>
+          <td [attr.colspan]="columns().length + 1" class="px-4 py-12 text-center">
+            <div class="flex flex-col items-center gap-2 text-gray-400">
+              <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                  d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
+              </svg>
+              <p class="text-sm">{{ emptyMessage() }}</p>
+            </div>
+          </td>
+        </tr>
+      }
+
+      <!-- Data state -->
+      @else {
+        @for (row of rows(); track $index) {
+          <tr class="border-b border-gray-200 hover:bg-gray-50 transition-colors">
+            @for (col of columns(); track col.key) {
+              <td class="px-4 py-3 text-gray-700">{{ getCellValue(row, col.key) }}</td>
+            }
+            <td class="px-4 py-3">
+              <div class="flex gap-2 justify-center">
+                <button
+                  class="px-3 py-1 text-xs font-medium rounded bg-blue-600 text-white hover:bg-blue-700 transition-colors"
+                  (click)="onAction('view', row)">
+                  Ver
+                </button>
+                <button
+                  class="px-3 py-1 text-xs font-medium rounded bg-red-600 text-white hover:bg-red-700 transition-colors"
+                  (click)="onAction('delete', row)">
+                  Eliminar
+                </button>
+              </div>
+            </td>
+          </tr>
+        }
+      }
+
+    </tbody>
+
+  </table>
+
+</div>
