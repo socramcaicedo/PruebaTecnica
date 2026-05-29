@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
-import { Card, Table, TableAction, TableColumn, Select, SelectOption, Button } from 'ui-lib';
+import { Card, Select, SelectOption, Table, TableColumn, TableAction, Button } from 'ui-lib';
+
 import { ResourceState } from './core/services/resource-state';
 import { Character, Episode, Location, Resource } from './core/models/resource.models';
 
