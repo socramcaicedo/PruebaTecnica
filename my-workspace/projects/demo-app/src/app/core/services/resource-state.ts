@@ -1,10 +1,12 @@
 import { HttpClient } from '@angular/common/http';
-import { inject, Injectable, signal } from '@angular/core';
-import { ApiResponse, Character, Episode, Location, Resource, ResourceType } from '../models/resource.models';
+import { DestroyRef, Injectable, effect, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { ApiResponse, Resource, ResourceType } from '../models/resource.models';
 
 @Injectable({ providedIn: 'root' })
 export class ResourceState {
   private readonly http = inject(HttpClient);
+  private readonly destroyRef = inject(DestroyRef);
   private readonly baseUrl = 'https://rickandmortyapi.com/api';
 
   readonly resourceType = signal<ResourceType>('character');
@@ -15,20 +17,20 @@ export class ResourceState {
   readonly selectedRow = signal<Resource | null>(null);
 
   constructor() {
-    this.fetchData();
+    effect(() => {
+      this.fetchData(this.resourceType(), this.statusFilter());
+    });
   }
 
   /** Cambia el recurso activo y resetea el filtro */
   setResource(type: ResourceType): void {
-    this.resourceType.set(type);
     this.statusFilter.set(null);
-    this.fetchData();
+    this.resourceType.set(type);
   }
 
   /** Cambia el filtro de status */
   setFilter(status: string | null): void {
     this.statusFilter.set(status);
-    this.fetchData();
   }
 
   /** Abre el modal de detalle */
@@ -41,27 +43,34 @@ export class ResourceState {
     this.selectedRow.set(null);
   }
 
-  private fetchData(): void {
+  /** Elimina un row de la tabla */
+  removeRow(row: Resource): void {
+    this.rows.update(rows => rows.filter(r => r !== row));
+  }
+
+  private fetchData(type: ResourceType, filter: string | null): void {
     this.loading.set(true);
     this.error.set(null);
 
-    const url = `${this.baseUrl}/${this.resourceType()}`;
+    const url = `${this.baseUrl}/${type}`;
     const params: Record<string, string> = {};
 
-    if (this.statusFilter() && this.resourceType() === 'character') {
-      params['status'] = this.statusFilter()!;
+    if (filter && type === 'character') {
+      params['status'] = filter;
     }
 
-    this.http.get<ApiResponse<Character> | ApiResponse<Episode> | ApiResponse<Location>>(url, { params }).subscribe({
-      next: (res) => {
-        this.rows.set(res.results);
-        this.loading.set(false);
-      },
-      error: () => {
-        this.error.set('Error al cargar los datos. Intenta de nuevo.');
-        this.rows.set([]);
-        this.loading.set(false);
-      }
-    });
+    this.http.get<ApiResponse<Resource>>(url, { params })
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (res) => {
+          this.rows.set(res.results);
+          this.loading.set(false);
+        },
+        error: () => {
+          this.error.set('Error al cargar los datos. Intenta de nuevo.');
+          this.rows.set([]);
+          this.loading.set(false);
+        }
+      });
   }
 }

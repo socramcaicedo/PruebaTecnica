@@ -1,17 +1,19 @@
-<div class="flex flex-col gap-1">
-  <label class="text-sm font-medium text-gray-300">{{ label() }}</label>
+<div class="flex flex-col gap-1.5">
+  <label class="text-xs font-semibold uppercase tracking-wider text-rick-green/80">{{ label() }}</label>
 
   @if (loading()) {
-    <div class="h-10 bg-gray-200 rounded animate-pulse"></div>
+    <div class="h-10 bg-dimension-border/50 rounded-lg animate-pulse border border-rick-green/10"></div>
   } @else {
     <select
-      class="h-10 px-3 rounded-lg border border-gray-600 bg-gray-800 text-white text-sm
-             focus:outline-none focus:ring-2 focus:ring-green-400 transition-colors
-             disabled:opacity-50 disabled:cursor-not-allowed"
+      class="h-10 px-3 rounded-lg border border-dimension-border bg-dimension-card text-gray-200 text-sm
+             hover:border-rick-green/40 transition-all duration-200
+             focus:outline-none focus:ring-2 focus:ring-rick-green/30 focus:border-rick-green/60
+             disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:border-dimension-border
+             appearance-none cursor-pointer"
       [disabled]="disabled()"
       [value]="value() ?? ''"
       (change)="onChange($event)">
-      <option value="" disabled>{{ placeholder() }}</option>
+      <option value="" disabled class="text-gray-500">{{ placeholder() }}</option>
       @for (opt of options(); track opt.value) {
         <option [value]="opt.value">{{ opt.label }}</option>
       }

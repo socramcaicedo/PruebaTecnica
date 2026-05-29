@@ -1,54 +1,108 @@
-<div class="min-h-screen bg-gray-900 text-white p-6">
+<div class="min-h-screen bg-dimension-bg">
 
   <!-- Header -->
-  <header class="mb-8 text-center">
-    <h1 class="text-3xl font-bold text-green-400">Rick & Morty Explorer</h1>
-    <p class="text-gray-400 mt-1">Explora personajes, episodios y localizaciones</p>
+  <header class="pt-8 pb-6 px-4 text-center border-b border-dimension-border/50">
+    <h1 class="text-3xl md:text-5xl font-bold text-rick-green text-glow-green"
+        style="font-family: 'Creepster', cursive;">
+      Rick & Morty Explorer 
+    </h1>
+    <p class="text-gray-500 mt-2 text-xs md:text-sm tracking-wide">
+      Explora personajes, episodios y localizaciones del multiverso
+    </p>
   </header>
 
-  <!-- Filtros -->
-  <div class="flex flex-wrap gap-4 mb-6 justify-center">
+  <div class="max-w-6xl mx-auto px-4 md:px-6 py-6">
 
-    <ui-select
-      [options]="resourceOptions"
-      label="Recurso"
-      placeholder="Seleccionar recurso..."
-      [value]="state.resourceType()"
-      (selectionChange)="onResourceChange($event)" />
+    <!-- Filtros -->
+    <div class="flex flex-wrap gap-4 mb-6 justify-center items-end">
 
-    <ui-select
-      [options]="filterOptions"
-      label="Filtro (Status)"
-      placeholder="Todos"
-      [value]="state.statusFilter()"
-      (selectionChange)="onFilterChange($event)" />
+      <ui-select
+        [options]="resourceOptions"
+        label="Recurso"
+        placeholder="Seleccionar recurso..."
+        [value]="state.resourceType()"
+        (selectionChange)="onResourceChange($event)" />
+
+      <ui-select
+        [options]="filterOptions"
+        label="Filtro (Status)"
+        placeholder="Todos"
+        [value]="state.statusFilter()"
+        (selectionChange)="onFilterChange($event)" />
+
+    </div>
+
+    <!-- Tabla -->
+    <ui-table
+      [columns]="columns()"
+      [rows]="state.rows()"
+      [loading]="state.loading()"
+      emptyMessage="No se encontraron resultados en esta dimensión."
+      [errorMessage]="state.error()"
+      (actionTriggered)="onTableAction($event)" />
 
   </div>
 
-  <!-- Tabla -->
-  <ui-table
-    [columns]="columns()"
-    [rows]="state.rows()"
-    [loading]="state.loading()"
-    emptyMessage="No se encontraron resultados."
-    [errorMessage]="state.error()"
-    (actionTriggered)="onTableAction($event)" />
-
   <!-- Modal de detalle -->
   @if (state.selectedRow()) {
-    <div class="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4"
+    <div class="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4"
          (click)="closeModal()">
-      <div class="bg-gray-800 rounded-xl max-w-lg w-full p-6 shadow-2xl"
-           (click)="$event.stopPropagation()">
+      <div class="max-w-lg w-full max-h-[90vh] overflow-y-auto animate-fade-in" (click)="$event.stopPropagation()">
 
-        <div class="flex justify-between items-center mb-4">
-          <h2 class="text-xl font-bold text-green-400">Detalle</h2>
-          <button
-            class="text-gray-400 hover:text-white text-2xl leading-none"
-            (click)="closeModal()">&times;</button>
-        </div>
+        <ui-card
+          [title]="detailTitle()"
+          [subtitle]="detailSubtitle()"
+          elevation="raised">
 
-        <pre class="text-sm text-gray-300 whitespace-pre-wrap break-words bg-gray-900 rounded-lg p-4">{{ state.selectedRow() | json }}</pre>
+          <!-- Imagen (solo Character) -->
+          @if (detailImage()) {
+            <div class="flex justify-center mb-4">
+              <img [src]="detailImage()" [alt]="detailTitle()"
+                   class="w-28 h-28 rounded-full border-2 border-rick-green/40 shadow-lg shadow-rick-green/10 object-cover" />
+            </div>
+          }
+
+          <!-- Campos del recurso -->
+          <div class="space-y-2.5">
+            @for (field of detailFields(); track field.label) {
+              <div class="flex justify-between items-center py-2 border-b border-dimension-border/50 last:border-0">
+                <span class="text-gray-500 text-xs uppercase tracking-wider">{{ field.label }}</span>
+                <span class="text-rick-portal text-sm font-medium text-right">{{ field.value }}</span>
+              </div>
+            }
+          </div>
+
+          <div class="mt-5 flex justify-end">
+            <ui-button label="Cerrar" variant="secondary" size="sm" (clicked)="closeModal()" />
+          </div>
+
+        </ui-card>
+
+      </div>
+    </div>
+  }
+
+  <!-- Modal de confirmación de eliminación -->
+  @if (pendingDelete()) {
+    <div class="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+         (click)="cancelDelete()">
+      <div class="max-w-sm w-full animate-fade-in" (click)="$event.stopPropagation()">
+
+        <ui-card
+          title="Confirmar eliminación"
+          subtitle="Esta acción no se puede deshacer"
+          elevation="raised">
+
+          <p class="text-gray-400 text-sm mb-5">
+            ¿Estás seguro de que deseas eliminar este registro?
+          </p>
+
+          <div class="flex gap-3 justify-end">
+            <ui-button label="Cancelar" variant="secondary" size="sm" (clicked)="cancelDelete()" />
+            <ui-button label="Eliminar" variant="danger" size="sm" (clicked)="confirmDelete()" />
+          </div>
+
+        </ui-card>
 
       </div>
     </div>

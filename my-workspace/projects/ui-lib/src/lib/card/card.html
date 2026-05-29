@@ -1,1 +1,18 @@
-<p>card works!</p>
+<div [class]="cardClasses()">
+
+  <!-- Header clickeable -->
+  <div
+    class="px-5 py-4 cursor-pointer hover:bg-dimension-hover/50 transition-colors border-b border-dimension-border"
+    (click)="headerClicked.emit()">
+    <h3 class="text-lg font-bold text-rick-green text-glow-green">{{ title() }}</h3>
+    @if (subtitle() !== null) {
+      <p class="text-sm text-rick-portal/80 mt-1">{{ subtitle() }}</p>
+    }
+  </div>
+
+  <!-- Body proyectado vía ng-content -->
+  <div class="px-5 py-4">
+    <ng-content />
+  </div>
+
+</div>
