@@ -52,6 +52,66 @@ Desde el inicio se tomaron decisiones que definieron la forma en que está const
 
 ---
 
+## Retos y Soluciones
+
+Durante el desarrollo se enfrentaron varios bloqueos y desafíos técnicos que requerían entender conceptos nuevos antes de poder implementarlos correctamente. A continuación se describen los principales y cómo se resolvieron.
+
+---
+
+### 1. Aprendizaje de Angular 21 y Signals API
+
+**Reto:** Angular 21 usa APIs modernas que difieren completamente de versiones anteriores. La prueba exige usar `input()`, `output()` y `model()` en vez de los decoradores tradicionales `@Input()` y `@Output()`. También exige componentes standalone con `ChangeDetectionStrategy.OnPush`, sin NgModules. Ninguno de estos conceptos era familiar al inicio del proyecto.
+
+**Solución:** Se investigó la documentación oficial de Angular y recursos de apoyo sugeridos en el PDF. Se aprendió que:
+- `input()` crea una signal reactiva que se puede leer como función (`label()`) y que Angular rastrea automáticamente.
+- `output()` reemplaza a `EventEmitter` y se conecta con `(clicked)` en el template.
+- `model()` permite two-way binding nativo con signals, reemplazando `@Input()` + `@Output()` + `EventEmitter`.
+- Los componentes standalone eliminan la necesidad de NgModules y simplifican la estructura.
+
+El mayor error repetido fue que la IA generaba código con decoradores `@Input()`/`@Output()` por defecto. Cada vez se identificaba y se reescribía manualmente con la Signals API. Esto obligó a entender profundamente cada signal en vez de solo copiar código.
+
+---
+
+### 2. Tailwind CSS v3 vs v4
+
+**Reto:** La prueba exige específicamente Tailwind CSS v3. Sin embargo, al instalar `tailwindcss` sin versión, npm instala la v4 por defecto, que tiene cambios breaking en la configuración (`@config` ya no existe, el archivo `tailwind.config.js` se reemplaza por CSS, los content paths cambian). Esto causó errores de estilos que no se aplicaban.
+
+**Solución:** Se forzó la instalación con `npm install -D tailwindcss@3` y se verificó la versión con `npx tailwindcss --help`. Se configuró `.postcssrc.json` manualmente porque Angular 21 lo requiere para integrar Tailwind. Los content paths se definieron para cubrir tanto `demo-app` como `ui-lib`. Cada vez que se aplicaban estilos y no funcionaban, se verificaba que las clases estuvieran dentro de los content paths.
+
+---
+
+### 3. Organización del workspace y separación de proyectos
+
+**Reto:** La prueba exige dos proyectos completamente aislados dentro de un mismo workspace: `ui-lib` (librería) y `demo-app` (aplicación). La demo-app debe importar componentes **solo a través de `public-api.ts`**, nunca directamente a archivos internos de la librería. Además, cada componente necesita su propia carpeta con `.ts`, `.html`, `.css` y `.spec.ts`, todos con prefijo `ui-`.
+
+**Solución:** Se usó `--create-application=false` al crear el workspace para que quedara limpio. Luego se generó la librería con `--prefix=ui` y la app demo por separado. Se creó la carpeta `core/` con `models/` y `services/` dentro de demo-app. Se verificó que todas las importaciones pasaran por `public-api.ts` y que ningún archivo de demo-app accediera a rutas internas de ui-lib. La estructura final quedó limpia y la librería se podría publicar en npm tal como está.
+
+---
+
+### 4. Tipado estricto sin `any`
+
+**Reto:** La prueba exige `strict: true` en `tsconfig.json` y cero uso de `any`. Esto fue un desafío constante porque la IA generaba código con `any` por defecto, especialmente en la tabla genérica donde se accede dinámicamente a propiedades de objetos desconocidos.
+
+**Solución:** Se usó `Record<string, unknown>` como tipo intermedio para acceder a propiedades dinámicas sin violar strict mode. La tabla se hizo genérica con `Table<T>` usando generics de TypeScript. Se definieron interfaces claras para `Character`, `Episode`, `Location`, `SelectOption`, `TableColumn` y `TableAction`. Cada vez que aparecía un `any`, se reescribía con el tipo correcto. Esto obligó a entender el sistema de tipos de TypeScript a fondo.
+
+---
+
+### 5. Integración de todos los componentes en un flujo cohesivo
+
+**Reto:** La prueba exige que los 4 componentes (button, card, select, table) trabajen juntos en un flujo completo: dos selects que controlan recurso y filtro, una tabla que reacciona a los cambios con estados de loading/empty/error, un modal de detalle con `ui-card` que cambia según el recurso, y un modal de confirmación de eliminación. Todo conectado con un servicio centralizado con signals.
+
+**Solución:** Se construyó el `ResourceState` como servicio único con signals para cada estado (`resourceType`, `statusFilter`, `rows`, `loading`, `error`, `selectedRow`). Un `effect()` observa los cambios y dispara `fetchData()` automáticamente. Los componentes solo se encargan de presentar la información. El `computed()` genera columnas dinámicas según el recurso activo. Los modales usan `ui-card` con `ng-content` para proyectar contenido diferente según el tipo de registro. La clave fue conectar todo paso a paso, verificando que cada componente funcionara antes de integrar el siguiente.
+
+---
+
+### 6. Diseño visual Rick & Morty sin assets externos
+
+**Reto:** La prueba exige que el diseño evoque el universo de Rick and Morty sin usar imágenes o assets con derechos de autor. Esto significaba lograr la atmósfera solo con colores, tipografía y estilos CSS.
+
+**Solución:** Se investigó la paleta de colores característica de la serie (verde portal neón, fondo oscuro espacial) y se definió una paleta propia en `tailwind.config.js` con dos namespaces: `rick` (verdes neón) y `dimension` (tonos oscuros). Se importó la fuente Creepster de Google Fonts solo para el título. Se creó una clase utilitaria `.text-glow-green` con `text-shadow` para el efecto de brillo portal. Se personalizó el scrollbar y se agregaron animaciones fade-in para los modales. El resultado evoca la serie con solo CSS.
+
+---
+
 ### Sesión 1 — Instalación y configuración del workspace
 
 **Contexto:** Se proporcionó el PDF de la prueba técnica como contexto a la IA en cada prompt para que siempre tuviera los requisitos completos. En cada paso se le pidió que explicara qué entendió y cómo lo iba a hacer antes de generar código.
