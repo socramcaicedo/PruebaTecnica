@@ -1109,3 +1109,156 @@ theme: {
 **Resumen del enfoque usado en esta sesión:**
 
 Se investigó primero el estilo visual de Rick and Morty para entender la paleta y atmosfera antes de implementar nada. Luego se definió la paleta de colores en `tailwind.config.js`, se agregaron estilos globales en `styles.css` (fuente Creepster, scrollbar, efecto glow), se aplicaron estilos a cada componente sin romper su funcionalidad, y se verificó la responsividad. El diseño se mantuvo limpio y organizado: solo clases Tailwind inline, sin archivos CSS adicionales, sin assets con derechos de autor. En cada paso se aseguró que los cambios de estilos no afectaran la lógica ya construida en las sesiones anteriores.
+
+---
+
+### Sesión 5 — Documentación JSDoc del código
+
+**Contexto:** En esta sesión se agregó documentación JSDoc profesional en español a todos los archivos TypeScript del proyecto que contienen componentes, servicios, modelos y la API pública de la librería. La sección 5 del PDF exige: "Documentar con JSDoc todos los inputs, outputs y métodos públicos de los componentes." Se continuó con la misma metodología de trabajo con la IA.
+
+---
+
+**Prompt 1 — Identificación de requisitos de documentación:**
+> "Revisa el PDF completo y la parte de comentar el código, qué hay que documentar infórmate sobre eso y mira el código documenta según el documento diga, pero según comenta la clase y sus métodos y demás de una manera profesional en español."
+
+**Qué respondió la IA:**
+- Identificó la sección 5 del PDF: JSDoc y Código
+- Detectó que hay que documentar: clases, inputs, outputs, métodos públicos, interfaces y tipos
+- Propuso documentar 8 archivos principales excluyendo los boilerplate de Angular (main.ts, server.ts, app.config.ts, etc.)
+- Propuso el estilo JSDoc estándar: `/** descripción */` para inputs/outputs/signals, y `/** descripción @param @returns */` para métodos
+
+**Qué se aceptó:**
+- El orden de documentación: primero ui-lib (button, card, select, table, public-api), luego demo-app (models, service, app)
+- El estilo JSDoc profesional en español con `@param`, `@returns`, `@typeparam` y `@example`
+- La decisión de no documentar los archivos boilerplate de Angular (no tienen inputs/outputs/métodos propios)
+
+**Qué se rechazó/modificó:**
+- No se rechazó nada. La IA documentó todos los archivos correctamente en el primer intento.
+
+---
+
+**Prompt 2 — Documentación del componente Button:**
+
+Se documentaron:
+- Descripción general de la clase `Button` con `@example`
+- Inputs: `label`, `variant`, `size`, `disabled`, `loading`
+- Output: `clicked`
+- Método `onClick()` con descripción del comportamiento condicional
+- Computed `buttonClasses` con descripción de las clases dinámicas
+- Constantes `BASE`, `VARIANTS` y `SIZES`
+
+**Qué se aceptó:**
+- La descripción completa de cada input con su propósito
+- El `@example` en la clase con uso en HTML
+
+---
+
+**Prompt 3 — Documentación del componente Card:**
+
+Se documentaron:
+- Descripción general de la clase `Card` con `@example`
+- Inputs: `title`, `subtitle`, `elevation`
+- Output: `headerClicked`
+- Computed `cardClasses`
+
+**Qué se aceptó:**
+- La documentación clara de los tres niveles de elevación (flat/raised/outlined)
+
+---
+
+**Prompt 4 — Documentación del componente Select:**
+
+Se documentaron:
+- Interfaz `SelectOption` con documentación de `label` y `value`
+- Descripción general de la clase `Select` con `@example`
+- Inputs: `options`, `label`, `placeholder`, `loading`, `disabled`
+- Model `value` con explicación del two-way binding
+- Output `selectionChange`
+- Método `onChange()` con `@param event`
+
+**Qué se aceptó:**
+- La explicación de `model()` para two-way binding con `[(value)]`
+- El `@param` en el método `onChange` documentando el evento nativo
+
+---
+
+**Prompt 5 — Documentación del componente Table:**
+
+Se documentaron:
+- Interfaz `TableColumn` con documentación de `key` y `header`
+- Interfaz `TableAction<T>` con `@typeparam T` y documentación de `action` y `row`
+- Descripción general de la clase `Table<T>` con `@typeparam` y `@example`
+- Inputs: `columns`, `rows`, `loading`, `emptyMessage`, `errorMessage`
+- Output `actionTriggered`
+- Métodos `onAction()` y `getCellValue()` con `@param` y `@returns`
+
+**Qué se aceptó:**
+- La documentación de `getCellValue()` explicando el uso de `Record<string, unknown>` sin `any`
+- El `@typeparam T` en la clase y en `TableAction`
+
+---
+
+**Prompt 6 — Documentación del public-api.ts:**
+
+Se documentaron:
+- Descripción general del barrel de exportaciones
+- Separación clara entre componentes y tipos exportados
+
+**Qué se aceptó:**
+- La explicación de que la demo-app debe importar exclusivamente desde este archivo
+
+---
+
+**Prompt 7 — Documentación de los modelos de la API:**
+
+Se documentaron:
+- Descripción general del archivo de modelos
+- Interfaz `ApiResponse<T>` con `@typeparam T` y cada campo de `info` (count, pages, next, prev)
+- Interfaz `Character` con cada campo documentado (id, name, status, species, origin, location, image, episode, etc.)
+- Interfaz `Episode` con cada campo documentado (id, name, air_date, episode, characters, etc.)
+- Interfaz `Location` con cada campo documentado (id, name, type, dimension, residents, etc.)
+- Tipo `ResourceType` con explicación de los valores posibles
+- Tipo `Resource` como unión de todos los recursos
+
+**Qué se aceptó:**
+- La documentación campo por campo de cada interfaz, explicando qué representa cada uno
+- La referencia al endpoint de la API en cada interfaz
+
+---
+
+**Prompt 8 — Documentación del servicio ResourceState:**
+
+Se documentaron:
+- Descripción general de la clase `ResourceState` con su propósito
+- Dependencias inyectadas: `HttpClient`, `DestroyRef`
+- Constante `baseUrl`
+- Signals: `resourceType`, `statusFilter`, `rows`, `loading`, `error`, `selectedRow`
+- Constructor con explicación del `effect()`
+- Métodos públicos: `setResource()`, `setFilter()`, `selectRow()`, `clearSelection()`, `removeRow()` con `@param`
+- Método privado `fetchData()` con `@param` y explicación del uso de `takeUntilDestroyed`
+
+**Qué se aceptó:**
+- La explicación del `effect()` en el constructor y cómo dispara automáticamente las consultas
+- La documentación de `takeUntilDestroyed` para evitar memory leaks
+
+---
+
+**Prompt 9 — Documentación del componente App:**
+
+Se documentaron:
+- Descripción general de la clase `App` con su propósito en el flujo principal
+- Inyección de `ResourceState`
+- Signal `pendingDelete` para el modal de confirmación
+- Arrays de opciones: `resourceOptions`, `filterOptions`
+- Computed: `columns`, `detailTitle`, `detailSubtitle`, `detailImage`, `detailFields`
+- Métodos handlers: `onResourceChange()`, `onFilterChange()`, `onTableAction()`, `confirmDelete()`, `cancelDelete()`, `closeModal()` todos con `@param`
+
+**Qué se aceptó:**
+- La documentación de cada `computed()` explicando qué reactiva y qué retorna
+- Los `@param` en cada método handler documentando los parámetros recibidos
+
+---
+
+**Resumen del enfoque usado en esta sesión:**
+
+Se documentaron los 8 archivos principales del proyecto con JSDoc profesional en español siguiendo el requisito de la sección 5 del PDF. Cada clase, input, output, método público, interfaz y tipo fue documentado con descripciones claras, `@param`, `@returns`, `@typeparam` y `@example` donde correspondía. Los 7 archivos boilerplate de Angular (main.ts, server.ts, app.config.ts, etc.) se excluyeron porque no contienen inputs, outputs ni métodos públicos propios. La documentación se realizó en orden: primero la librería ui-lib (button, card, select, table, public-api), luego la aplicación demo-app (models, service, app). No se rechazó ni modificó nada — la IA documentó correctamente todos los archivos en el primer intento.
