@@ -1262,3 +1262,175 @@ Se documentaron:
 **Resumen del enfoque usado en esta sesión:**
 
 Se documentaron los 8 archivos principales del proyecto con JSDoc profesional en español siguiendo el requisito de la sección 5 del PDF. Cada clase, input, output, método público, interfaz y tipo fue documentado con descripciones claras, `@param`, `@returns`, `@typeparam` y `@example` donde correspondía. Los 7 archivos boilerplate de Angular (main.ts, server.ts, app.config.ts, etc.) se excluyeron porque no contienen inputs, outputs ni métodos públicos propios. La documentación se realizó en orden: primero la librería ui-lib (button, card, select, table, public-api), luego la aplicación demo-app (models, service, app). No se rechazó ni modificó nada — la IA documentó correctamente todos los archivos en el primer intento.
+
+---
+
+### Sesión 6 — Conventional Commits, gestión de Git y ajustes del repositorio
+
+**Contexto:** En esta sesión se utilizó la IA (Claude Code) para reorganizar el historial de commits del repositorio siguiendo el estándar de Conventional Commits que exige la sección 5 del PDF. También se ajustó la configuración de git, se reemplazaron archivos de documentación entre la raíz y my-workspace, se agregó la sección de Retos y Soluciones, y se crearon los commits descriptivos correspondientes.
+
+---
+
+**Prompt 1 — Verificación de usuario de git:**
+> "Dime en qué usuario estás logeado."
+
+**Qué se hizo:**
+- Se verificó que el git config local tenía `Ander_AAM` pero la GitHub CLI estaba autenticada como `socramcaicedo`
+- Esto significaba que los commits saldrían con el autor equivocado
+
+**Qué se aceptó:**
+- La detección de la inconsistencia entre git config y GitHub CLI
+
+**Qué se modificó:**
+- Se cambió el git config local a `socramcaicedo` / `caicedodaniel09@gmail.com` para que todo fuera consistente
+
+```bash
+git config user.name "socramcaicedo"
+git config user.email "caicedodaniel09@gmail.com"
+```
+
+---
+
+**Prompt 2 — Renombramiento de commits con Conventional Commits:**
+> "Revisa los commits de la PruebaTecnica, renómbralos según el PDF Conventional Commits, y renómbralos de acuerdo al contenido y lo que dicen las reglas del PDF."
+
+**Qué respondió la IA:**
+- Leyó el PDF y extrajo la sección de Conventional Commits
+- Analizó el contenido real de cada commit con `git show --stat`
+- Propuso nuevos nombres basándose en el tipo de cambio y el contenido:
+
+| Commit original | Nuevo nombre |
+|---|---|
+| `creacion cel proyecto` | `feat: initialize angular project with base configuration` |
+| `primero de pasos` | `feat: add ui-lib components and demo-app workspace structure` |
+| `librerias UI + VISTA PRINCIPAL.` | `feat: implement UI component styles and main view layout` |
+| `AJUSTE` | `fix: adjust resource state handling in demo-app` |
+| `README and project documentation` | `docs: add component API table and project documentation to README` |
+
+**Qué se aceptó:**
+- Los 5 nuevos nombres propuestos
+- Los tipos usados: `feat` para nuevas funcionalidades, `fix` para correcciones, `docs` para documentación
+- El análisis del contenido de cada commit para determinar el tipo correcto
+
+**Qué se rechazó/modificó:**
+- No se rechazó nada. Los nombres fueron descriptivos y correctos.
+
+**Proceso seguido:**
+
+```bash
+git filter-branch -f --msg-filter '
+  msg=$(cat)
+  case "$msg" in
+    "creacion cel proyecto") echo "feat: initialize angular project with base configuration" ;;
+    "primero de pasos") echo "feat: add ui-lib components and demo-app workspace structure" ;;
+    "librerias UI + VISTA PRINCIPAL.") echo "feat: implement UI component styles and main view layout" ;;
+    "AJUSTE") echo "fix: adjust resource state handling in demo-app" ;;
+    "README and project documentation") echo "docs: add component API table and project documentation to README" ;;
+    *) echo "$msg" ;;
+  esac
+' -- --all
+```
+
+Se limpiaron las referencias viejas:
+
+```bash
+git for-each-ref --format='delete %(refname)' refs/original/ | git update-ref --stdin
+git reflog expire --expire=now --all
+git gc --prune=now --aggressive
+```
+
+---
+
+**Prompt 3 — Reemplazo de archivos de documentación:**
+> "Estos deben reemplazar los que están en my-workspace."
+
+**Qué se hizo:**
+- Se copiaron `DEVELOPMENT_LOG.md` y `README.md` de la raíz del repositorio a `my-workspace/`
+- El `DEVELOPMENT_LOG.md` pasó de estar vacío a tener la bitácora completa
+- El `README.md` pasó de documentación básica a documentación completa con API de componentes
+
+```bash
+cp DEVELOPMENT_LOG.md my-workspace/DEVELOPMENT_LOG.md
+cp README.md my-workspace/README.md
+```
+
+---
+
+**Prompt 4 — Commit de documentación:**
+> "Mira los cambios que hay actualmente y crea un commit de acuerdo a los criterios del PDF que sea descriptivo."
+
+**Qué respondió la IA:**
+- Propuso un commit tipo `docs:` con cuerpo descriptivo
+- Inicialmente incluía `Co-Authored-By: Claude Opus 4.7`
+
+**Qué se aceptó:**
+- El tipo `docs` y la estructura del mensaje
+- La descripción de los cambios en el body
+
+**Qué se rechazó/modificó:**
+- Se solicitó eliminar la línea `Co-Authored-By: Claude Opus 4.7`
+- Se solicitó cambiar "Replace" por "Add/Update" en las descripciones
+- Se hizo `git commit --amend` para corregirlo y se forzó el push
+
+Commit final:
+```
+docs: update project documentation with component API and development log
+
+- Update README.md with architecture overview, component API tables, usage examples, and Rick & Morty theme documentation
+- Add DEVELOPMENT_LOG.md with full bitácora covering 4 development sessions, AI prompts, and code decisions
+```
+
+---
+
+**Prompt 5 — Agregar sección Retos y Soluciones:**
+> "Según DEVELOPMENT_LOG.md y decisiones técnicas, el aprendizaje de las librerías y conceptos, ordenar los componentes, y hacer todo así, fue un reto. Describe eso en el archivo DEVELOPMENT_LOG.md después de Decisiones de Arquitectura."
+
+**Qué respondió la IA:**
+- Propuso agregar una sección "Retos y Soluciones" con 6 retos basados en lo documentado en las sesiones anteriores
+- Cada reto con descripción del problema y cómo se resolvió
+
+**Qué se aceptó:**
+- Los 6 retos identificados:
+  1. Aprendizaje de Angular 21 y Signals API
+  2. Tailwind CSS v3 vs v4
+  3. Organización del workspace y separación de proyectos
+  4. Tipado estricto sin `any`
+  5. Integración de todos los componentes en un flujo cohesivo
+  6. Diseño visual Rick & Morty sin assets externos
+- La ubicación después de "Decisiones de Arquitectura" y antes de "Sesión 1"
+- El formato con número, nombre del reto, descripción y solución
+
+**Qué se rechazó/modificó:**
+- No se rechazó nada.
+
+Commit:
+```
+docs: add retos y soluciones section to development log
+
+- Add challenges and solutions covering Angular 21 Signals API learning, Tailwind v3 setup, workspace organization, strict typing, component integration, and Rick & Morty visual design
+```
+
+---
+
+**Prompt 6 — Documentación JSDoc del código:**
+> "Revisa el PDF completo y la parte de comentar el código, qué hay que documentar infórmate sobre eso y mira el código documenta según el documento diga, pero según comenta la clase y sus métodos y demás de una manera profesional en español."
+
+(Este proceso se documenta en detalle en la Sesión 5.)
+
+Commit:
+```
+docs: add JSDoc documentation to all components, services, and models
+
+- Document ui-lib components (button, card, select, table) with JSDoc for classes, inputs, outputs, and public methods
+- Document public-api.ts barrel exports
+- Document resource models with field-level descriptions for Character, Episode, and Location interfaces
+- Document ResourceState service with signals, constructor effect, and all public/private methods
+- Document App component with computed properties and handler methods
+- Add session 5 to DEVELOPMENT_LOG.md covering the full JSDoc documentation process
+```
+
+---
+
+**Resumen del enfoque usado en esta sesión:**
+
+Se utilizó la IA como asistente de gestión de Git para: (1) configurar correctamente el usuario de git, (2) reescribir el historial de commits aplicando el estándar de Conventional Commits del PDF, (3) reemplazar archivos de documentación entre la raíz y my-workspace, (4) agregar la sección de Retos y Soluciones al DEVELOPMENT_LOG.md, (5) crear commits descriptivos siguiendo las reglas del PDF, y (6) documentar todo el código con JSDoc. La IA generó los mensajes de commit y ejecutó los comandos de git, pero el usuario revisó y ajustó cada mensaje antes de confirmar (por ejemplo, eliminando el Co-Authored-By y cambiando verbos como "Replace" por "Update/Add"). Todos los pushes requirieron `--force` porque se reescribió el historial al renombrar los commits originales.
